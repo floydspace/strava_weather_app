@@ -1,0 +1,12 @@
+fly.toml
+Dockerfile
+.dockerignore
+.venv
+.env
+.git
+.github
+.pytest_cache/
+__pycache__/
+.idea/
+.vscode/
+.coverage
