@@ -36,7 +36,7 @@ def final():
         1 if "humidity" in request.values else 0,
         1 if "wind" in request.values else 0,
         1 if "aqi" in request.values else 0,
-        request.values.get("lan", "ru"),
+        request.values.get("lan", "en"),
     )
     manage_db.add_settings(settings)
     return render_template("final.html", athlete=session["athlete"])

@@ -69,7 +69,7 @@ activities_to_try = [
     {"description": ""},
     {"start_latlng": [0, LNG]},
     {"start_latlng": [LAT, 0]},
-    {"start_latlng": [LAT, LNG], "start_date": "2021-06-03T12:48:06Z", "name": "icon"},
+    {"start_latlng": [LAT, LNG], "start_date": "2021-06-03T12:48:06Z", "elapsed_time": 3600, "name": "icon"},
 ]
 
 

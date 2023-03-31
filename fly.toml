@@ -1,4 +1,4 @@
-# fly.toml file generated for strava-weather-app on 2023-03-30T18:19:12+02:00
+# fly.toml file generated for strava-weather-app on 2023-03-31T20:39:25+02:00
 
 app = "strava-weather-app"
 kill_signal = "SIGINT"

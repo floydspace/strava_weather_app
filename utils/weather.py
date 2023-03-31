@@ -58,23 +58,25 @@ def add_weather(athlete_id: int, activity_id: int):
         print(f"WARNING: {int(time.time())} - No start geo position for ID={activity_id}, T={start_time}")
         return  # ok, but no processing
 
+    payload = {}
+
     settings = manage_db.get_settings(athlete_id)
 
     if settings.icon:
         activity_title = activity.get("name")
         icon = get_weather_icon(lat, lon, activity_time)
-        if activity_title.startswith(icon) or not icon:
-            return  # maybe ok, no processing
-        payload = {"name": icon + " " + activity_title}
-    else:
-        weather_description = get_weather_description(lat, lon, activity_time, settings)
+        if icon and not activity_title.startswith(icon):
+            payload["name"] = icon + " " + activity_title
 
-        # Add air quality only if user set this option and time of activity uploading is appropriate!
-        if settings.aqi and (start_time + activity["elapsed_time"] + 7200 > time.time()):
-            air_conditions = get_air_description(lat, lon, settings.lan)
-        else:
-            air_conditions = ""
-        payload = {"description": description + weather_description + air_conditions}
+    weather_description = get_weather_description(lat, lon, activity_time, settings)
+
+    # Add air quality only if user set this option and time of activity uploading is appropriate!
+    if settings.aqi and (start_time + activity["elapsed_time"] + 7200 > time.time()):
+        air_conditions = get_air_description(lat, lon, settings.lan)
+    else:
+        air_conditions = ""
+    payload["description"] = description + weather_description + air_conditions
+
     strava.modify_activity(payload)
 
 

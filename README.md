@@ -34,3 +34,17 @@ You can also set adding only an emoji in the activity title:
 pip install -r requirements-dev.txt
 pytest --cov-report=term-missing:skip-covered --cov=. tests/
 ```
+
+### Run application
+
+```shell
+pip install -r requirements.txt
+flask --app run:app init-db
+flask --app run:app run
+```
+
+### Deploy to Fly.io
+
+```shell
+fly launch --now
+```

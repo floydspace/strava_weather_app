@@ -35,9 +35,9 @@ def test_final_page_abort(client):
 
 parameters_to_try = [
     {"icon": 1},
-    {"icon": 1, "lan": "en"},
+    {"icon": 1, "lan": "ru"},
     {"wind": 2, "humidity": 3, "aqi": 4},
-    {"wind": 2, "humidity": 3, "aqi": 4, "lan": "en"},
+    {"wind": 2, "humidity": 3, "aqi": 4, "lan": "ru"},
     {"icon": 1, "wind": 2, "humidity": 3, "aqi": 4, "lan": "ru"},
     {"lan": "en", "wind": 1, "aqi": 2, "humidity": 3},
     {"humidity": 1},
@@ -63,7 +63,7 @@ def test_final_page(client, monkeypatch, capsys, params_from_auth):
         f"hum={1 if 'humidity' in params_from_auth else 0}, "
         f"wind={1 if 'wind' in params_from_auth else 0}, "
         f"aqi={1 if 'aqi' in params_from_auth else 0}, "
-        f"lan='{'ru' if 'lan' not in params_from_auth else params_from_auth['lan']}')\n"
+        f"lan='{'en' if 'lan' not in params_from_auth else params_from_auth['lan']}')\n"
     )
     assert response.status_code == 200
     assert b"Test User" in response.data
