@@ -2,11 +2,11 @@ import calendar
 import os
 import time
 
-import requests
 from dotenv import load_dotenv
 
 from utils import manage_db
 from utils.strava_client import StravaClient
+from utils.weather_client import WeatherClient
 
 dotenv_path = os.path.join(os.path.dirname(__file__), "../.env")
 load_dotenv(dotenv_path)
@@ -64,7 +64,7 @@ def add_weather(athlete_id: int, activity_id: int):
 
     if settings.icon:
         activity_title = activity.get("name")
-        icon = get_weather_icon(lat, lon, activity_time)
+        icon = get_weather_icon(lat, lon, activity_time, settings)
         if icon and not activity_title.startswith(icon):
             payload["name"] = icon + " " + activity_title
 
@@ -72,7 +72,7 @@ def add_weather(athlete_id: int, activity_id: int):
 
     # Add air quality only if user set this option and time of activity uploading is appropriate!
     if settings.aqi and (start_time + activity["elapsed_time"] + 7200 > time.time()):
-        air_conditions = get_air_description(lat, lon, settings.lan)
+        air_conditions = get_air_description(lat, lon, settings)
     else:
         air_conditions = ""
     payload["description"] = description + weather_description + air_conditions
@@ -80,26 +80,20 @@ def add_weather(athlete_id: int, activity_id: int):
     strava.modify_activity(payload)
 
 
-def get_weather_description(lat, lon, w_time, s) -> str:
+def get_weather_description(lat, lon, w_time, settings) -> str:
     """Get weather data using https://openweathermap.org/ API.
 
     :param lat: latitude
     :param lon: longitude
     :param w_time: time of requested weather data
-    :param s: settings as named tuple with hum, wind and lan fields
+    :param settings: settings as named tuple with hum, wind and lan fields
     :return: string with history weather data
     """
-    weather_api_key = os.environ.get("API_WEATHER_KEY")
-    base_url = (
-        "http://api.openweathermap.org/data/2.5/onecall/timemachine?"
-        f"lat={lat}&lon={lon}&dt={w_time}&appid={weather_api_key}&units=metric&lang={s.lan}"
-    )
-    response = requests.get(base_url)
+    weather_client = WeatherClient(settings)
     try:
-        w = response.json()["current"]
+        w = weather_client.get_weather(lat, lon, w_time)
     except (KeyError, ValueError):
-        print(f"Error! Weather request failed. User ID-{s.id} in ({lat},{lon}) at {w_time}.")
-        print(f"OpenApiWeather response - code: {response.status_code}, body: {response.text}")
+        print(f"Error! Weather request failed. User ID-{settings.id} in ({lat},{lon}) at {w_time}.")
         return ""
     trnsl = {
         "ru": ["Погода", "по ощущениям", "влажность", "ветер", "м/с", "с"],
@@ -107,51 +101,51 @@ def get_weather_description(lat, lon, w_time, s) -> str:
     }
     description = (
         f"{w['weather'][0]['description'].capitalize()}, "
-        f"🌡\xa0{w['temp']:.0f}°C ({trnsl[s.lan][1]} {w['feels_like']:.0f}°C)"
+        f"🌡\xa0{w['temp']:.0f}°C ({trnsl[settings.lan][1]} {w['feels_like']:.0f}°C)"
     )
-    description += f", 💦\xa0{w['humidity']}%" if s.hum else ""
-    if s.wind:
-        description += f", 💨\xa0{w['wind_speed']:.0f}{trnsl[s.lan][4]}"
+    description += f", 💦\xa0{w['humidity']}%" if settings.hum else ""
+    if settings.wind:
+        description += f", 🌬️\xa0{w['wind_speed']:.0f}{trnsl[settings.lan][4]}"
         if f"{w['wind_speed']:.0f}" != "0":
-            description += f" ({trnsl[s.lan][5]} {compass_direction(w['wind_deg'], s.lan)})."
+            description += f" ({trnsl[settings.lan][5]} {compass_direction(w['wind_deg'], settings.lan)})."
         else:
             description += "."
     return description
 
 
-def get_air_description(lat, lon, lan="en") -> str:
+def get_air_description(lat, lon, settings) -> str:
     """Get air quality data using https://openweathermap.org/ API.
     It gives only current AQ and appropriate only if activity synced not too late.
 
     :param lat: latitude
     :param lon: longitude
-    :param lan: language 'ru' or 'en' by default
+    :param settings: settings as named tuple with hum, wind and lan fields
     :return: string with air quality data
     """
-    weather_api_key = os.environ.get("API_WEATHER_KEY")
-    base_url = f"http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={weather_api_key}"
-    aq = requests.get(base_url).json()
+    weather_client = WeatherClient(settings)
+    aq = weather_client.get_air_quality(lat, lon)
     # Air Quality Index: 1 = Good, 2 = Fair, 3 = Moderate, 4 = Poor, 5 = Very Poor
-    aqi = ["😃", "🙂", "😐", "🙁", "😨"][aq["list"][0]["main"]["aqi"] - 1]
+    aqi = ["😃", "🙂", "😐", "🙁", "😨"][aq["main"]["aqi"] - 1]
     air = {"ru": "Воздух", "en": "Air"}
     return (
-        f"\n{air[lan]} {aqi} {aq['list'][0]['components']['pm2_5']:.0f}(PM2.5), "
-        f"{aq['list'][0]['components']['so2']:.0f}(SO₂), {aq['list'][0]['components']['no2']:.0f}(NO₂), "
-        f"{aq['list'][0]['components']['nh3']:.1f}(NH₃)."
+        f"\n{air[settings.lan]} {aqi} {aq['components']['pm2_5']:.0f}(PM2.5), "
+        f"{aq['components']['so2']:.0f}(SO₂), {aq['components']['no2']:.0f}(NO₂), "
+        f"{aq['components']['nh3']:.1f}(NH₃)."
     )
 
 
-def get_weather_icon(lat, lon, w_time):
+def get_weather_icon(lat, lon, w_time, settings):
     """Get weather icon using https://openweathermap.org/ API.
     See icon codes on https://openweathermap.org/weather-conditions
 
     :param lat: latitude
     :param lon: longitude
     :param w_time: time of requested weather data
+    :param settings: settings as named tuple with hum, wind and lan fields
     :return: emoji with weather
     """
     icons = {
-        "01d": "🌄",
+        "01d": "☀️",
         "01n": "🌙",
         "02d": "🌤",
         "02n": "☁",
@@ -159,24 +153,24 @@ def get_weather_icon(lat, lon, w_time):
         "03n": "☁",
         "04d": "🌥",
         "04n": "🌥",
-        "50d": "🌫",
-        "50n": "🌫",
-        "13d": "🌨",
-        "13n": "🌨",
-        "10n": "🌧",
-        "10d": "🌦",
         "09d": "🌧",
         "09n": "🌧",
+        "10d": "🌦",
+        "10n": "🌧",
         "11d": "⛈",
         "11n": "⛈",
+        "13d": "🌨",
+        "13n": "🌨️",
+        "50d": "🌫",
+        "50n": "🌫",
     }
-    weather_api_key = os.environ.get("API_WEATHER_KEY")
-    base_url = (
-        "http://api.openweathermap.org/data/2.5/onecall/timemachine?"
-        f"lat={lat}&lon={lon}&dt={w_time}&appid={weather_api_key}&units=metric&lang=en"
-    )
+    weather_client = WeatherClient(settings)
     try:
-        icon_code = requests.get(base_url).json()["current"]["weather"][0]["icon"]
+        w = weather_client.get_weather(lat, lon, w_time)
+        icon_id = w["weather"][0]["id"]
+        if icon_id in (210, 211, 212, 221):  # thunderstorm without rain
+            return "🌩"
+        icon_code = w["weather"][0]["icon"]
         return icons[icon_code]
     except (KeyError, ValueError):
         print(f"Weather request failed in ({lat},{lon}) at {w_time}.")

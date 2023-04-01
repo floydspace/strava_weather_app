@@ -6,6 +6,9 @@ import requests
 from utils import manage_db
 from utils.exceptions import StravaAPIError
 
+STRAVA_BASE_URL = "https://www.strava.com/api/v3"
+STRAVA_AUTH_URL = "https://www.strava.com/oauth/token"
+
 
 class StravaClient:
     def __init__(self, athlete_id, activity_id):
@@ -28,7 +31,7 @@ class StravaClient:
             "grant_type": "refresh_token",
         }
         try:
-            refresh_response = self.__session.post("https://www.strava.com/oauth/token", data=params).json()
+            refresh_response = self.__session.post(STRAVA_AUTH_URL, data=params).json()
             return manage_db.Tokens(
                 tokens.id,
                 refresh_response["access_token"],
@@ -43,7 +46,7 @@ class StravaClient:
 
         :return: dictionary with activity data
         """
-        url = f"https://www.strava.com/api/v3/activities/{self.__activity_id}"
+        url = f"{STRAVA_BASE_URL}/activities/{self.__activity_id}"
         try:
             return self.__session.get(url, headers=self.__headers).json()
         except ValueError:
@@ -56,7 +59,7 @@ class StravaClient:
         :param payload: dictionary with keys description, name, type, gear_id, trainer, commute
         :return: dictionary with updated activity parameters
         """
-        url = f"https://www.strava.com/api/v3/activities/{self.__activity_id}"
+        url = f"{STRAVA_BASE_URL}/activities/{self.__activity_id}"
         result = self.__session.put(url, headers=self.__headers, data=payload)
         if not result.ok:
             raise StravaAPIError(f"Failed modify activity ID={self.__activity_id}. Athlete ID={self.__athlete_id}")

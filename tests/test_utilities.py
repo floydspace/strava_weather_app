@@ -90,14 +90,14 @@ def test_compass_direction(degree, direction_en, direction_ru):
 
 
 def test_get_weather_icon():
-    icon = weather.get_weather_icon(LAT, LNG, TIME)
+    icon = weather.get_weather_icon(LAT, LNG, TIME, manage_db.DEFAULT_SETTINGS)
     print(icon)
     assert isinstance(icon, str)
     assert len(icon) == 1
 
 
 def test_get_weather_icon_fail():
-    assert weather.get_weather_icon(LAT, LNG, TIME - 6 * 25 * 3600) is None
+    assert weather.get_weather_icon(LAT, LNG, TIME - 6 * 25 * 3600, manage_db.DEFAULT_SETTINGS) is None
 
 
 def test_get_weather_description():
@@ -105,7 +105,7 @@ def test_get_weather_description():
     descr = weather.get_weather_description(LAT, LNG, TIME, settings)
     print(descr)
     assert re.fullmatch(
-        r"(\w+\s?){1,3}, 🌡.-?\d{1,2}°C \(по ощущениям -?\d{1,2}°C\), 💦.\d{1,3}%, 💨.\d{1,2}м/с \(с \w{1,3}\).", descr
+        r"(\w+\s?){1,3}, 🌡.-?\d{1,2}°C \(feels like -?\d{1,2}°C\), 💦.\d{1,3}%, 🌬️.\d{1,2}m/s \(from \w{1,3}\).", descr
     )
 
 
@@ -114,7 +114,7 @@ def test_get_weather_description_no_wind(monkeypatch):
     settings = manage_db.DEFAULT_SETTINGS
     descr = weather.get_weather_description(LAT, LNG, TIME, settings)
     print(descr)
-    assert re.fullmatch(r"Weather description, 🌡.-15°C \(по ощущениям 23°C\), 💦.64%, 💨.0м/с.", descr)
+    assert re.fullmatch(r"Weather description, 🌡.-15°C \(feels like 23°C\), 💦.64%, 🌬️.0m/s.", descr)
 
 
 def test_get_weather_description_failed():
@@ -132,9 +132,9 @@ def test_get_weather_description_bad_response():
 
 
 def test_get_air_description():
-    description = weather.get_air_description(LAT, LNG, lan="ru")
+    description = weather.get_air_description(LAT, LNG, manage_db.DEFAULT_SETTINGS)
     print(description)
-    assert re.fullmatch(r"\nВоздух . \d+\(PM2\.5\), \d+\(SO₂\), \d+\(NO₂\), \d+(\.\d)?\(NH₃\)\.", description)
+    assert re.fullmatch(r"\nAir . \d+\(PM2\.5\), \d+\(SO₂\), \d+\(NO₂\), \d+(\.\d)?\(NH₃\)\.", description)
 
 
 def test_add_weather_bad_activity(strava_client_mock, monkeypatch):

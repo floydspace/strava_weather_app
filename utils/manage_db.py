@@ -7,7 +7,7 @@ from flask.cli import with_appcontext
 
 Tokens = namedtuple("Tokens", "id access_token refresh_token expires_at")
 Settings = namedtuple("Settings", "id icon hum wind aqi lan")
-DEFAULT_SETTINGS = Settings(0, 0, 1, 1, 1, "ru")
+DEFAULT_SETTINGS = Settings(0, 0, 1, 1, 1, "en")
 
 
 def get_db():
