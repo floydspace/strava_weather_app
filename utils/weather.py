@@ -75,7 +75,7 @@ def add_weather(athlete_id: int, activity_id: int):
         air_conditions = get_air_description(lat, lon, settings)
     else:
         air_conditions = ""
-    payload["description"] = description + weather_description + air_conditions
+    payload["description"] = description + weather_description + air_conditions + " - by strava-weather-app"
 
     strava.modify_activity(payload)
 

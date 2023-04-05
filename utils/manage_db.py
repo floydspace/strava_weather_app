@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from collections import namedtuple
 
@@ -99,6 +100,12 @@ def delete_athlete(athlete_id: int):
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+    if not os.path.exists(app.config["DATABASE"]):
+        data_dir = os.path.dirname(app.config["DATABASE"])
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+            with app.app_context():
+                init_db()
 
 
 def init_db():
@@ -123,7 +130,6 @@ def init_db_command():
 
 
 if __name__ == "__main__":  # pragma: no cover
-    import os
     from dotenv import load_dotenv
 
     dotenv_path = os.path.join(os.path.dirname(__file__), "../.env")

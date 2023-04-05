@@ -46,5 +46,5 @@ flask --app run:app run
 ### Deploy to Fly.io
 
 ```shell
-fly launch --now
+npm run deploy
 ```
