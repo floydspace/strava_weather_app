@@ -10,3 +10,8 @@ __pycache__/
 .idea/
 .vscode/
 .coverage
+.gen/
+cdktf*
+data/
+node_modules/
+package*.json

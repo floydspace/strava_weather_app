@@ -101,15 +101,15 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
     if not os.path.exists(app.config["DATABASE"]):
-        data_dir = os.path.dirname(app.config["DATABASE"])
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-            with app.app_context():
-                init_db()
+        with app.app_context():
+            init_db()
 
 
 def init_db():
     """Initial function for database creation."""
+    data_dir = os.path.dirname(current_app.config["DATABASE"])
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
     db = get_db()
     with current_app.open_resource("sql_db.sql") as f:
         db.executescript(f.read().decode("utf8"))

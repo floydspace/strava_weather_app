@@ -105,7 +105,7 @@ def test_get_weather_description():
     descr = weather.get_weather_description(LAT, LNG, TIME, settings)
     print(descr)
     assert re.fullmatch(
-        r"(\w+\s?){1,3}, 🌡.-?\d{1,2}°C \(feels like -?\d{1,2}°C\), 💦.\d{1,3}%, 🌬️.\d{1,2}m/s \(from \w{1,3}\).", descr
+        r"(\w+\s?){1,3}, 🌡.-?\d{1,2}°C \(feels like -?\d{1,2}°C\), 💦.\d{1,3}%, 🌬️.\d{1,2}m/s \(from \w{1,3}\)\.", descr
     )
 
 
@@ -114,7 +114,7 @@ def test_get_weather_description_no_wind(monkeypatch):
     settings = manage_db.DEFAULT_SETTINGS
     descr = weather.get_weather_description(LAT, LNG, TIME, settings)
     print(descr)
-    assert re.fullmatch(r"Weather description, 🌡.-15°C \(feels like 23°C\), 💦.64%, 🌬️.0m/s.", descr)
+    assert re.fullmatch(r"Weather description, 🌡.-15°C \(feels like 23°C\), 💦.64%, 🌬️.0m/s\.", descr)
 
 
 def test_get_weather_description_failed():

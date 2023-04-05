@@ -82,7 +82,7 @@ export class MyStack extends TerraformStack {
       app: app.name,
       region: region,
       name: `${app.name}-${region}`,
-      image: image.name,
+      image: registry.name,
       env: {
         DATABASE: process.env.DATABASE!,
         PRIMARY_REGION: region,
@@ -108,7 +108,6 @@ export class MyStack extends TerraformStack {
       cpus: 1,
       cputype: 'shared',
       memorymb: 256,
-      dependsOn: [registry],
     });
 
     new StravaPushSubscription(this, 'push-subscription', {
