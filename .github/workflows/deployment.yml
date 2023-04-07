@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,12 +41,14 @@ jobs:
         run: npm ci
       - name: Generate module and provider bindings
         run: npm run get
-      - name: Run Terraform CDK
-        uses: hashicorp/terraform-cdk-action@v0.1.0
-        with:
-          terraformVersion: 1.4.4
-          cdktfVersion: 0.15.5
-          stackName: strava-weather-app
-          mode: auto-approve-apply
-          terraformCloudToken: ${{ secrets.TF_API_TOKEN }}
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy
+        run: npm run deploy
+        env:
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          API_WEATHER_KEY: ${{ secrets.API_WEATHER_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DATABASE: data/database.db
+          STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_WEBHOOK_TOKEN: ${{ secrets.STRAVA_WEBHOOK_TOKEN }}
