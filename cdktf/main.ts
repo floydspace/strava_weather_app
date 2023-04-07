@@ -2,7 +2,7 @@ import path from 'path';
 import { Image as DockerImage } from '@cdktf/provider-docker/lib/image';
 import { DockerProvider } from '@cdktf/provider-docker/lib/provider';
 import { RegistryImage as DockerRegistryImage } from '@cdktf/provider-docker/lib/registry-image';
-import { App, CloudBackend, Fn, NamedCloudWorkspace, TerraformStack } from 'cdktf';
+import { App, CloudBackend, NamedCloudWorkspace, TerraformStack } from 'cdktf';
 import { Construct } from 'constructs';
 import { App as FlyApp } from '../.gen/providers/fly/app';
 import { Ip as FlyIp } from '../.gen/providers/fly/ip';
@@ -36,7 +36,8 @@ export class MyStack extends TerraformStack {
       registryAuth: [
         {
           address: registryUrl,
-          configFile: Fn.pathexpand('~/.docker/config.json'),
+          username: 'x', // See why https://github.com/superfly/flyctl/blob/4ab254962153a30bf6dc0e73efb88bfaafc916ec/internal/command/auth/docker.go#L92
+          password: process.env.FLY_API_TOKEN,
         },
       ],
     });
