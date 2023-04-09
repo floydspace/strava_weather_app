@@ -8,7 +8,7 @@ import { App as FlyApp } from '../.gen/providers/fly/app';
 import { Ip as FlyIp } from '../.gen/providers/fly/ip';
 import { Machine as FlyMachine } from '../.gen/providers/fly/machine';
 import { FlyProvider } from '../.gen/providers/fly/provider';
-// import { Volume as FlyVolume } from '../.gen/providers/fly/volume';
+import { Volume as FlyVolume } from '../.gen/providers/fly/volume';
 import { StravaProvider } from '../.gen/providers/strava/provider';
 import { PushSubscription as StravaPushSubscription } from '../.gen/providers/strava/push-subscription';
 
@@ -72,12 +72,12 @@ export class MyStack extends TerraformStack {
     // new FlyIp(this, 'ipv4', { app: app.name, type: 'v4' });
     new FlyIp(this, 'ipv6', { app: app.name, type: 'v6' });
 
-    // new FlyVolume(this, 'volume', {
-    //   app: app.name,
-    //   name: `${name.replace(/-/g, '_')}_data`,
-    //   region: region,
-    //   size: 1,
-    // });
+    const volume = new FlyVolume(this, 'volume', {
+      app: app.name,
+      name: `${name.replace(/-/g, '_')}_data`,
+      region: region,
+      size: 1,
+    });
 
     new FlyMachine(this, 'machine', {
       app: app.name,
@@ -98,14 +98,14 @@ export class MyStack extends TerraformStack {
           internalPort: 8000,
         },
       ],
-      // mounts: [
-      //   {
-      //     volume: volume.id,
-      //     encrypted: true,
-      //     path: '/usr/src/app/data',
-      //     sizeGb: 1,
-      //   },
-      // ],
+      mounts: [
+        {
+          volume: volume.id,
+          encrypted: true,
+          path: '/usr/src/app/data',
+          sizeGb: 1,
+        },
+      ],
       cpus: 1,
       cputype: 'shared',
       memorymb: 256,
