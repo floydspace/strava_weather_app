@@ -54,19 +54,13 @@ export class MyStack extends TerraformStack {
     const app = new FlyApp(this, 'app', {
       name: name,
       org: 'personal',
-      provisioners: [
-        {
-          type: 'local-exec',
-          command:
-            `fly secrets -a ${name} set ` +
-            `SECRET_KEY=${process.env.SECRET_KEY} ` +
-            `API_WEATHER_KEY=${process.env.API_WEATHER_KEY} ` +
-            `STRAVA_CLIENT_ID=${process.env.STRAVA_CLIENT_ID} ` +
-            `STRAVA_CLIENT_SECRET=${process.env.STRAVA_CLIENT_SECRET} ` +
-            `STRAVA_WEBHOOK_TOKEN=${process.env.STRAVA_WEBHOOK_TOKEN} `,
-          when: 'create',
-        },
-      ],
+      secrets: {
+        SECRET_KEY: { value: process.env.SECRET_KEY! },
+        API_WEATHER_KEY: { value: process.env.API_WEATHER_KEY! },
+        STRAVA_CLIENT_ID: { value: process.env.STRAVA_CLIENT_ID! },
+        STRAVA_CLIENT_SECRET: { value: process.env.STRAVA_CLIENT_SECRET! },
+        STRAVA_WEBHOOK_TOKEN: { value: process.env.STRAVA_WEBHOOK_TOKEN! },
+      },
     });
 
     // new FlyIp(this, 'ipv4', { app: app.name, type: 'v4' });
