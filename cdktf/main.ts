@@ -1,8 +1,9 @@
 import path from 'path';
+import glob from 'glob';
 import { Image as DockerImage } from '@cdktf/provider-docker/lib/image';
 import { DockerProvider } from '@cdktf/provider-docker/lib/provider';
 import { RegistryImage as DockerRegistryImage } from '@cdktf/provider-docker/lib/registry-image';
-import { App, CloudBackend, NamedCloudWorkspace, TerraformStack } from 'cdktf';
+import { App, CloudBackend, NamedCloudWorkspace, TerraformStack, Fn } from 'cdktf';
 import { Construct } from 'constructs';
 import { App as FlyApp } from '../.gen/providers/fly/app';
 import { Ip as FlyIp } from '../.gen/providers/fly/ip';
@@ -42,9 +43,16 @@ export class MyStack extends TerraformStack {
       ],
     });
 
+    const cwd = path.resolve(__dirname, '../');
+    const srcFiles = [...glob.sync('utils/*.py', { cwd }), 'Dockerfile', 'requirements.txt', 'run.py'];
+
     const image = new DockerImage(this, 'image', {
-      name: `${registryUrl}/${name}:deployment-${Date.now()}`,
-      buildAttribute: { context: path.resolve(__dirname, '../') },
+      name: `${registryUrl}/${name}:dev`,
+      buildAttribute: { context: cwd },
+      triggers: srcFiles.reduce(
+        (acc, file) => ({ ...acc, [file]: Fn.filemd5(path.resolve(cwd, file)) }),
+        {} as Record<string, string>
+      ),
     });
 
     const registry = new DockerRegistryImage(this, 'registry-image', {

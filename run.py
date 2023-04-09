@@ -121,15 +121,6 @@ def subscribers():
     return {"count": manage_db.get_subscribers_count()}
 
 
-# @app.route("/update_server", methods=["POST"])
-# def update_server():
-#     x_hub_signature = request.headers.get("X-Hub-Signature")
-#     if not git_helpers.is_valid_signature(x_hub_signature, request.data):
-#         return "wrong signature", 406
-#     git_helpers.pull()
-#     return "Server successfully updated", 202
-
-
 @app.errorhandler(404)
 def http_404_handler(error):
     return render_template("404.html"), 404
